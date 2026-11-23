@@ -1,0 +1,3091 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="책마루" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#ffffff" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231d4ed8'/%3E%3Cpath d='M16 18h11a7 7 0 0 1 5 2.2A7 7 0 0 1 37 18h11v26H37a5 5 0 0 0-5 3.5A5 5 0 0 0 27 44H16V18z' fill='none' stroke='%23ffffff' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"
+    />
+    <link
+      rel="apple-touch-icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%231d4ed8'/%3E%3Cpath d='M44 52h32a18 18 0 0 1 14 7 18 18 0 0 1 14-7h32v76h-32a14 14 0 0 0-14 9 14 14 0 0 0-14-9H44V52z' fill='none' stroke='%23ffffff' stroke-width='9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"
+    />
+    <title>책마루 — 내 전자도서관 통합 검색</title>
+    <meta
+      name="description"
+      content="서초구, 강남구, 온책방, 수원시 등 가입한 여러 전자도서관을 한 번에 검색하고 도서관별 실시간 대출 가능 여부를 확인하세요."
+    />
+    <meta property="og:title" content="책마루 — 내 전자도서관 통합 검색" />
+    <meta
+      property="og:description"
+      content="가입한 여러 전자도서관의 전자책을 한 번에 검색하고 대출 가능 여부를 비교하세요."
+    />
+    <meta property="og:type" content="website" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      :root {
+        --font-display: "Plus Jakarta Sans", "IBM Plex Sans KR", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+        --font-sans: "IBM Plex Sans KR", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+        --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+      }
+      html {
+        -webkit-text-size-adjust: 100%;
+        -webkit-tap-highlight-color: transparent;
+      }
+      body {
+        font-family: var(--font-sans);
+        color: #0f172a;
+        background-color: #f8fafc;
+        overflow-x: hidden;
+      }
+      h1, h2, h3, .font-display {
+        font-family: var(--font-display);
+      }
+      button, a, input, select {
+        touch-action: manipulation;
+      }
+      @media (max-width: 639px) {
+        input, select, textarea {
+          font-size: 16px;
+        }
+      }
+      .font-mono, .tabular-nums {
+        font-variant-numeric: tabular-nums;
+      }
+      .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      .line-clamp-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+    </style>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  </head>
+  <body class="bg-slate-50 text-slate-900 antialiased selection:bg-blue-100 selection:text-blue-900">
+    <div id="root">
+      <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;color:#475569;font-size:14px;">
+        책마루 전자책 통합 검색을 불러오는 중입니다...
+      </div>
+    </div>
+    <noscript>
+      <div style="padding:24px;text-align:center;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;color:#0f172a;font-size:14px;">
+        책마루를 사용하려면 브라우저에서 JavaScript를 허용해 주세요.
+      </div>
+    </noscript>
+
+    <script type="text/babel">
+      const { useState, useEffect, useMemo, useRef, useCallback } = React;
+
+      // =========================================================
+      // Inline SVG Icons (Zero external icon bundle dependency)
+      // =========================================================
+      function Icon({ children, className = 'w-4 h-4', viewBox = '0 0 24 24' }) {
+        return (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox={viewBox}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={className}
+            aria-hidden="true"
+          >
+            {children}
+          </svg>
+        );
+      }
+
+      const BookOpenIcon = ({ className }) => (
+        <Icon className={className}>
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+        </Icon>
+      );
+
+      const BookMarkedIcon = ({ className }) => (
+        <Icon className={className}>
+          <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
+          <polyline points="10 2 10 10 13 7 16 10 16 2" />
+        </Icon>
+      );
+
+      const CheckIcon = ({ className }) => (
+        <Icon className={className}>
+          <polyline points="20 6 9 17 4 12" />
+        </Icon>
+      );
+
+      const CheckCircle2Icon = ({ className }) => (
+        <Icon className={className}>
+          <circle cx="12" cy="12" r="10" />
+          <path d="m9 12 2 2 4-4" />
+        </Icon>
+      );
+
+      const ClockIcon = ({ className }) => (
+        <Icon className={className}>
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </Icon>
+      );
+
+      const PlusIcon = ({ className }) => (
+        <Icon className={className}>
+          <path d="M5 12h14" />
+          <path d="M12 5v14" />
+        </Icon>
+      );
+
+      const RotateCcwIcon = ({ className }) => (
+        <Icon className={className}>
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+          <path d="M3 3v5h5" />
+        </Icon>
+      );
+
+      const Trash2Icon = ({ className }) => (
+        <Icon className={className}>
+          <path d="M3 6h18" />
+          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+          <line x1="10" x2="10" y1="11" y2="17" />
+          <line x1="14" x2="14" y1="11" y2="17" />
+        </Icon>
+      );
+
+      const ExternalLinkIcon = ({ className }) => (
+        <Icon className={className}>
+          <path d="M15 3h6v6" />
+          <path d="M10 14 21 3" />
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+        </Icon>
+      );
+
+      const KeyRoundIcon = ({ className }) => (
+        <Icon className={className}>
+          <path d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4a6.5 6.5 0 1 0-4-4Z" />
+          <circle cx="16.5" cy="7.5" r=".5" fill="currentColor" />
+        </Icon>
+      );
+
+      const MinusCircleIcon = ({ className }) => (
+        <Icon className={className}>
+          <circle cx="12" cy="12" r="10" />
+          <path d="M8 12h8" />
+        </Icon>
+      );
+
+      const AlertCircleIcon = ({ className }) => (
+        <Icon className={className}>
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" x2="12" y1="8" y2="12" />
+          <line x1="12" x2="12.01" y1="16" y2="16" />
+        </Icon>
+      );
+
+      const AlertTriangleIcon = ({ className }) => (
+        <Icon className={className}>
+          <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+          <path d="M12 9v4" />
+          <path d="M12 17h.01" />
+        </Icon>
+      );
+
+      const XIcon = ({ className }) => (
+        <Icon className={className}>
+          <path d="M18 6 6 18" />
+          <path d="m6 6 12 12" />
+        </Icon>
+      );
+
+      const SearchIcon = ({ className }) => (
+        <Icon className={className}>
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.3-4.3" />
+        </Icon>
+      );
+
+      const SlidersHorizontalIcon = ({ className }) => (
+        <Icon className={className}>
+          <line x1="21" x2="14" y1="4" y2="4" />
+          <line x1="10" x2="3" y1="4" y2="4" />
+          <line x1="21" x2="12" y1="12" y2="12" />
+          <line x1="8" x2="3" y1="12" y2="12" />
+          <line x1="21" x2="16" y1="20" y2="20" />
+          <line x1="12" x2="3" y1="20" y2="20" />
+          <line x1="14" x2="14" y1="2" y2="6" />
+          <line x1="8" x2="8" y1="10" y2="14" />
+          <line x1="16" x2="16" y1="18" y2="22" />
+        </Icon>
+      );
+
+      const LibraryIcon = ({ className }) => (
+        <Icon className={className}>
+          <path d="m16 6 4 14" />
+          <path d="M12 6v14" />
+          <path d="M8 8v12" />
+          <path d="M4 4v16" />
+        </Icon>
+      );
+
+      const GlobeIcon = ({ className }) => (
+        <Icon className={className}>
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+          <path d="M2 12h20" />
+        </Icon>
+      );
+
+      const Loader2Icon = ({ className }) => (
+        <Icon className={className}>
+          <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+        </Icon>
+      );
+
+      // =========================================================
+      // Default & Preset Library Catalog (Maintained identically)
+      // =========================================================
+      const DEFAULT_LIBRARIES = [
+        {
+          id: 'seocho-owned',
+          name: '서초구 전자도서관',
+          shortName: '서초(소장)',
+          category: 'owned',
+          adapter: 'kyobo-elibrary',
+          baseUrl: 'https://ebook.seocholib.or.kr/elibrary-front',
+          enabled: true,
+          isDefault: true,
+          description: '서초구립도서관 소장형 전자책 (교보문고)',
+        },
+        {
+          id: 'seocho-sub',
+          name: '서초구 전자도서관(구독)',
+          shortName: '서초(구독)',
+          category: 'subscription',
+          adapter: 'kyobo-subscription',
+          baseUrl: 'https://ebook.seocholib.or.kr/elibrary-front',
+          enabled: true,
+          isDefault: true,
+          description: '서초구립도서관 구독형 전자책 (정회원 로그인 연동)',
+        },
+        {
+          id: 'gangnam',
+          name: '강남구 전자도서관',
+          shortName: '강남구',
+          category: 'owned',
+          adapter: 'gangnam-asp',
+          baseUrl: 'https://ebook.gangnam.go.kr',
+          enabled: true,
+          isDefault: true,
+          description: '강남구통합도서관 전자책 (교보·YES24·웅진)',
+        },
+        {
+          id: 'onbook',
+          name: '온책방',
+          shortName: '온책방',
+          category: 'subscription',
+          adapter: 'kyobo-root',
+          baseUrl: 'https://onbook.dkyobobook.co.kr',
+          enabled: true,
+          isDefault: true,
+          description: '한국출판문화산업진흥원 디지털도서관 (교보 기반)',
+        },
+        {
+          id: 'suwon',
+          name: '수원시 전자도서관',
+          shortName: '수원시',
+          category: 'owned',
+          adapter: 'kyobo-elibrary',
+          baseUrl: 'https://ebook.suwonlib.go.kr/elibrary-front',
+          enabled: true,
+          isDefault: true,
+          description: '수원시 도서관 소장형 전자책 (교보문고)',
+        },
+      ];
+
+      const PRESET_LIBRARIES = [
+        {
+          id: 'yongin',
+          name: '용인시 전자도서관',
+          shortName: '용인시',
+          category: 'owned',
+          adapter: 'kyobo-elibrary',
+          baseUrl: 'https://ebook.yongin.go.kr/elibrary-front',
+          enabled: true,
+          description: '용인시 도서관 소장형 전자책 (실시간 검색 지원)',
+        },
+        {
+          id: 'mapo',
+          name: '마포구 전자도서관',
+          shortName: '마포구',
+          category: 'owned',
+          adapter: 'kyobo-elibrary',
+          baseUrl: 'https://ebook.mapo.go.kr/elibrary-front',
+          enabled: true,
+          description: '마포구립도서관 소장형 전자책 (실시간 검색 지원)',
+        },
+        {
+          id: 'songpa',
+          name: '송파구 전자도서관',
+          shortName: '송파구',
+          category: 'owned',
+          adapter: 'custom-link',
+          baseUrl: 'https://ebook.splib.or.kr',
+          enabled: true,
+          description: '송파구통합도서관 전자도서관 바로가기',
+        },
+        {
+          id: 'seongnam',
+          name: '성남시 전자도서관',
+          shortName: '성남시',
+          category: 'owned',
+          adapter: 'custom-link',
+          baseUrl: 'https://ebook.snlib.go.kr/elibrary-front',
+          enabled: true,
+          description: '성남시 도서관 전자책 포털 연동',
+        },
+        {
+          id: 'eunpyeong',
+          name: '은평구 전자도서관',
+          shortName: '은평구',
+          category: 'owned',
+          adapter: 'custom-link',
+          baseUrl: 'https://epbook.eplib.or.kr',
+          enabled: true,
+          description: '은평구립도서관 전자도서관 포털 연동',
+        },
+        {
+          id: 'seoul-lib',
+          name: '서울도서관 전자책',
+          shortName: '서울도서관',
+          category: 'owned',
+          adapter: 'custom-link',
+          baseUrl: 'https://lib.seoul.go.kr',
+          searchUrlTemplate:
+            'https://lib.seoul.go.kr/search/tot/result?st=KWRD&si=TOTAL&q={query}',
+          enabled: true,
+          description: '서울시 통합 검색 링크 연동',
+        },
+        {
+          id: 'gyeonggi-cyber',
+          name: '경기도사이버도서관',
+          shortName: '경기도',
+          category: 'owned',
+          adapter: 'custom-link',
+          baseUrl: 'https://www.library.kr',
+          searchUrlTemplate:
+            'https://www.library.kr/cyber/ebook/ebookList.do?searchKeyword={query}',
+          enabled: true,
+          description: '경기도사이버도서관 전자책 검색 연동',
+        },
+        {
+          id: 'busan-sub',
+          name: '부산광역시 전자도서관(구독)',
+          shortName: '부산(구독)',
+          category: 'subscription',
+          adapter: 'custom-link',
+          baseUrl: 'https://busanlib.bookcube.biz',
+          enabled: true,
+          description: '부산광역시 전자도서관 (북큐브 구독형)',
+        },
+        {
+          id: 'busan-bukgu',
+          name: '부산 북구 구립도서관',
+          shortName: '부산북구',
+          category: 'owned',
+          adapter: 'custom-link',
+          baseUrl: 'https://ebook.bsbukgu.go.kr',
+          enabled: true,
+          description: '부산 북구 전자도서관 포털 연동',
+        },
+        {
+          id: 'national-sejong',
+          name: '국립중앙도서관',
+          shortName: '국립중앙',
+          category: 'owned',
+          adapter: 'custom-link',
+          baseUrl: 'https://www.nl.go.kr',
+          searchUrlTemplate: 'https://www.nl.go.kr/NL/contents/search.do?kwd={query}',
+          enabled: true,
+          description: '국립중앙도서관 자료 검색 링크 연동',
+        },
+        {
+          id: 'assembly-lib',
+          name: '국회전자도서관',
+          shortName: '국회도서관',
+          category: 'owned',
+          adapter: 'custom-link',
+          baseUrl: 'https://dl.nanet.go.kr',
+          searchUrlTemplate:
+            'https://dl.nanet.go.kr/search/searchInnerList.do?searchType=SIMPLE&queryText={query}',
+          enabled: true,
+          description: '국회전자도서관 통합 검색 링크 연동',
+        },
+      ];
+
+      const STORAGE_KEY = 'chaekmaru_libraries_v1';
+
+      function loadSavedLibraries() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return DEFAULT_LIBRARIES;
+          const parsed = JSON.parse(raw);
+          if (!Array.isArray(parsed) || parsed.length === 0) {
+            return DEFAULT_LIBRARIES;
+          }
+          return parsed;
+        } catch {
+          return DEFAULT_LIBRARIES;
+        }
+      }
+
+      function saveLibraries(libraries) {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(libraries));
+        } catch {
+          // Ignore storage errors
+        }
+      }
+
+      // =========================================================
+      // Browser-Side Live Library Search & Discovery Engine
+      // =========================================================
+      function cleanText(value) {
+        return (value || '').replace(/\s+/g, ' ').trim();
+      }
+
+      function normalizeDirectCoverUrl(rawSrc, origin) {
+        if (!rawSrc) return '';
+        const trimmed = rawSrc.trim();
+        if (!trimmed || trimmed.includes('L_NOBOOK') || trimmed.includes('nobook')) {
+          return '';
+        }
+        if (trimmed.startsWith('//')) {
+          return `https:${trimmed}`;
+        }
+        if (trimmed.startsWith('/')) {
+          return `${origin}${trimmed}`;
+        }
+        if (!trimmed.startsWith('http')) {
+          return `${origin}/${trimmed}`;
+        }
+        return trimmed;
+      }
+
+      function decodeBase64Bytes(base64) {
+        const binary = atob(base64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) {
+          bytes[i] = binary.charCodeAt(i);
+        }
+        return bytes;
+      }
+
+      function decodeTextBytes(bufferOrBytes, encoding = 'utf-8') {
+        try {
+          return new TextDecoder(encoding).decode(bufferOrBytes);
+        } catch {
+          return new TextDecoder('utf-8').decode(bufferOrBytes);
+        }
+      }
+
+      let eucKrEncodeMap = null;
+      function encodeEucKrQuery(query) {
+        try {
+          if (!eucKrEncodeMap) {
+            const map = new Map();
+            const dec = new TextDecoder('euc-kr');
+            const pair = new Uint8Array(2);
+            for (let b1 = 0xA1; b1 <= 0xFE; b1++) {
+              pair[0] = b1;
+              for (let b2 = 0xA1; b2 <= 0xFE; b2++) {
+                pair[1] = b2;
+                const ch = dec.decode(pair);
+                if (ch && ch !== '\uFFFD' && ch.length === 1 && !map.has(ch)) {
+                  map.set(
+                    ch,
+                    `%${b1.toString(16).toUpperCase()}%${b2.toString(16).toUpperCase()}`
+                  );
+                }
+              }
+            }
+            for (let b1 = 0x81; b1 <= 0xC6; b1++) {
+              pair[0] = b1;
+              for (let b2 = 0x41; b2 <= 0xFE; b2++) {
+                if (b1 >= 0xA1 && b2 >= 0xA1) continue;
+                pair[1] = b2;
+                const ch = dec.decode(pair);
+                if (ch && ch !== '\uFFFD' && ch.length === 1 && !map.has(ch)) {
+                  map.set(
+                    ch,
+                    `%${b1.toString(16).toUpperCase()}%${b2.toString(16).toUpperCase()}`
+                  );
+                }
+              }
+            }
+            eucKrEncodeMap = map;
+          }
+          let out = '';
+          for (const ch of query) {
+            const code = ch.charCodeAt(0);
+            if (code < 0x80) {
+              out += encodeURIComponent(ch);
+            } else if (eucKrEncodeMap.has(ch)) {
+              out += eucKrEncodeMap.get(ch);
+            } else {
+              out += encodeURIComponent(ch);
+            }
+          }
+          return out;
+        } catch {
+          return encodeURIComponent(query);
+        }
+      }
+
+      async function fetchProxiedHtml(targetUrl, encoding = 'utf-8', timeoutMs = 11000) {
+        const proxyBuilders = [
+          {
+            type: 'jina',
+            timeout: Math.max(timeoutMs, 11000),
+            build: (u) => `https://r.jina.ai/${u}`,
+            options: {
+              headers: {
+                'X-Return-Format': 'html',
+              },
+            },
+          },
+          {
+            type: 'raw',
+            timeout: Math.min(timeoutMs, 4000),
+            build: (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+          },
+          {
+            type: 'raw',
+            timeout: Math.min(timeoutMs, 4000),
+            build: (u) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+          },
+          {
+            type: 'json',
+            timeout: Math.min(timeoutMs, 4000),
+            build: (u) => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
+          },
+        ];
+
+        for (const proxy of proxyBuilders) {
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), proxy.timeout || timeoutMs);
+          try {
+            const res = await fetch(proxy.build(targetUrl), {
+              ...(proxy.options || {}),
+              signal: controller.signal,
+            });
+            clearTimeout(timer);
+            if (!res.ok) continue;
+
+            if (proxy.type === 'jina') {
+              const text = await res.text();
+              if (!text || text.trim().startsWith('{')) continue;
+              return text;
+            } else if (proxy.type === 'json') {
+              const data = await res.json();
+              if (!data || !data.contents) continue;
+              if (data.contents.startsWith('data:')) {
+                const commaIdx = data.contents.indexOf(',');
+                if (commaIdx !== -1) {
+                  const b64 = data.contents.slice(commaIdx + 1);
+                  const bytes = decodeBase64Bytes(b64);
+                  return decodeTextBytes(bytes, encoding);
+                }
+              }
+              return data.contents;
+            } else {
+              const buf = await res.arrayBuffer();
+              return decodeTextBytes(buf, encoding);
+            }
+          } catch {
+            clearTimeout(timer);
+          }
+        }
+
+        throw new Error('도서관 실시간 검색 연결 지연');
+      }
+
+      function parseKyoboDom(html, library, searchUrl) {
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        const origin = new URL(library.baseUrl).origin;
+        const results = [];
+
+        doc.querySelectorAll('.book_resultList > li').forEach((el) => {
+          const titEl = el.querySelector('li.tit a');
+          const title = cleanText(titEl ? titEl.textContent : '');
+          if (!title) return;
+
+          const writerEl = el.querySelector('li.writer');
+          let publisher = '';
+          let author = '';
+          let publishDate = '';
+
+          if (writerEl) {
+            const spanEl = writerEl.querySelector('span');
+            publisher = cleanText(spanEl ? spanEl.textContent : '');
+            const clone = writerEl.cloneNode(true);
+            const cloneSpan = clone.querySelector('span');
+            if (cloneSpan) cloneSpan.remove();
+            const rawWriterText = cleanText(clone.textContent);
+            const dateMatch = rawWriterText.match(/\d{4}-\d{2}-\d{2}/);
+            publishDate = dateMatch ? dateMatch[0] : '';
+            author = cleanText(
+              dateMatch ? rawWriterText.replace(dateMatch[0], '') : rawWriterText
+            );
+          }
+
+          const txtEl = el.querySelector('li.txt');
+          const description = cleanText(txtEl ? txtEl.textContent : '');
+          const imgEl = el.querySelector('.img img');
+          const coverUrl = normalizeDirectCoverUrl(
+            imgEl ? imgEl.getAttribute('src') : '',
+            origin
+          );
+          const formatEl = el.querySelector('span.small');
+          const format = cleanText(formatEl ? formatEl.textContent : '') || '전자책';
+          const storeEl = el.querySelector('span.store');
+          const vendor = cleanText(storeEl ? storeEl.textContent : '') || '교보문고';
+
+          const useEl = el.querySelector('p.use');
+          const useText = cleanText(useEl ? useEl.textContent : '');
+          const loanMatch = useText.match(/대출\s*:\s*(\d+)\s*\/\s*(\d+)/);
+          const reserveMatch = useText.match(/예약\s*:\s*(\d+)/);
+
+          const buttonLabels = Array.from(el.querySelectorAll('input[type="button"]'))
+            .map((btn) => cleanText(btn.value || btn.getAttribute('value') || ''));
+
+          let status = 'available';
+          let loanedCopies;
+          let totalCopies;
+          let availableCopies;
+          let reservedCount;
+
+          if (loanMatch) {
+            loanedCopies = parseInt(loanMatch[1], 10);
+            totalCopies = parseInt(loanMatch[2], 10);
+            reservedCount = reserveMatch ? parseInt(reserveMatch[1], 10) : 0;
+            availableCopies = Math.max(0, totalCopies - loanedCopies);
+            status = availableCopies > 0 ? 'available' : 'loaned';
+          } else if (library.category === 'subscription' || buttonLabels.includes('대출')) {
+            status =
+              library.category === 'subscription'
+                ? 'subscription_available'
+                : 'available';
+          } else if (buttonLabels.includes('예약')) {
+            status = 'loaned';
+          }
+
+          const directSearchUrl = `${library.baseUrl.replace(/\/$/, '')}/search/searchList.ink?schDvsn=000&schTxt=${encodeURIComponent(title)}`;
+
+          results.push({
+            libraryId: library.id,
+            title,
+            author: author || '저자 미상',
+            publisher: publisher || '출판사 정보 없음',
+            publishDate,
+            description,
+            coverUrl,
+            detailUrl: directSearchUrl || searchUrl,
+            vendor,
+            format,
+            status,
+            totalCopies,
+            loanedCopies,
+            availableCopies,
+            reservedCount,
+          });
+        });
+
+        return results;
+      }
+
+      async function searchKyoboLibraryClient(library, query, field) {
+        const base = library.baseUrl.replace(/\/$/, '');
+        const schDvsn = field === 'title' ? '001' : field === 'author' ? '002' : '000';
+        const searchUrl = `${base}/search/searchList.ink?schDvsn=${schDvsn}&schTxt=${encodeURIComponent(query)}&selViewCnt=40`;
+
+        try {
+          const html = await fetchProxiedHtml(searchUrl, 'utf-8');
+          let books = parseKyoboDom(html, library, searchUrl);
+
+          if (books.length === 0 && schDvsn !== '000') {
+            const fallbackUrl = `${base}/search/searchList.ink?schDvsn=000&schTxt=${encodeURIComponent(query)}&selViewCnt=40`;
+            const fallbackHtml = await fetchProxiedHtml(fallbackUrl, 'utf-8');
+            books = parseKyoboDom(fallbackHtml, library, fallbackUrl);
+          }
+
+          const availableCount = books.filter(
+            (b) => b.status === 'available' || b.status === 'subscription_available'
+          ).length;
+
+          return {
+            books,
+            summary: {
+              libraryId: library.id,
+              libraryName: library.name,
+              resultCount: books.length,
+              availableCount,
+              status: 'ok',
+            },
+          };
+        } catch (err) {
+          return {
+            books: [],
+            summary: {
+              libraryId: library.id,
+              libraryName: library.name,
+              resultCount: 0,
+              availableCount: 0,
+              status: 'error',
+              errorMessage: err instanceof Error ? err.message : '검색 연결 오류',
+            },
+          };
+        }
+      }
+
+      function parseGangnamDom(html, library) {
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        const base = library.baseUrl.replace(/\/$/, '');
+        const results = [];
+
+        doc.querySelectorAll('.book').forEach((el) => {
+          if (el.querySelector('.book')) return;
+          const titleLink = el.querySelector('.book_title a');
+          const title = cleanText(titleLink ? titleLink.textContent : '');
+          if (!title) return;
+
+          const href = (titleLink && titleLink.getAttribute('href')) || '';
+          const detailUrl = href.startsWith('http')
+            ? href
+            : `${base}/elibbook/${href.replace(/^\//, '')}`;
+
+          const imgEl = el.querySelector('.book_frame img');
+          const coverUrl = normalizeDirectCoverUrl(
+            imgEl ? imgEl.getAttribute('src') : '',
+            base
+          );
+
+          const writerEl = el.querySelector('.writer');
+          const author = cleanText(writerEl ? writerEl.textContent : '') || '저자 미상';
+          const pubEl = el.querySelector('.publish_date');
+          const pubRaw = cleanText(pubEl ? pubEl.textContent : '');
+          const pubParts = pubRaw.split('·').map((s) => s.trim());
+          const publisher = pubParts[0] || '출판사 정보 없음';
+          const publishDate = pubParts[1] || '';
+
+          const currents = Array.from(el.querySelectorAll('.current')).map((c) =>
+            cleanText(c.textContent)
+          );
+          const vendor = currents[0] || '전자책';
+          const countsLine = currents.find((c) => c.includes('보유')) || '';
+          const countMatch = countsLine.match(/보유\s*(\d+).*?대출\s*(\d+).*?예약\s*(\d+)/);
+
+          let totalCopies;
+          let loanedCopies;
+          let reservedCount;
+          let availableCopies;
+          let status = 'available';
+
+          if (countMatch) {
+            totalCopies = parseInt(countMatch[1], 10);
+            loanedCopies = parseInt(countMatch[2], 10);
+            reservedCount = parseInt(countMatch[3], 10);
+            availableCopies = Math.max(0, totalCopies - loanedCopies);
+            status = availableCopies > 0 ? 'available' : 'loaned';
+          }
+
+          const infoEl = el.querySelector('.info_text');
+          const description = cleanText(infoEl ? infoEl.textContent : '');
+
+          results.push({
+            libraryId: library.id,
+            title,
+            author,
+            publisher,
+            publishDate,
+            description,
+            coverUrl,
+            detailUrl,
+            vendor,
+            format: '전자책',
+            status,
+            totalCopies,
+            loanedCopies,
+            availableCopies,
+            reservedCount,
+          });
+        });
+
+        return results;
+      }
+
+      async function searchGangnamLibraryClient(library, query, field) {
+        const base = library.baseUrl.replace(/\/$/, '');
+        try {
+          const fetchSingle = async (param) => {
+            const url = `${base}/elibbook/book_info.asp?search=${param}&strSearch=${encodeEucKrQuery(query)}`;
+            const html = await fetchProxiedHtml(url, 'euc-kr');
+            return parseGangnamDom(html, library);
+          };
+
+          let books = [];
+          if (field === 'title') {
+            books = await fetchSingle('title');
+          } else if (field === 'author') {
+            books = await fetchSingle('author');
+          } else {
+            const [byTitle, byAuthor] = await Promise.all([
+              fetchSingle('title'),
+              fetchSingle('author'),
+            ]);
+            const seen = new Set();
+            for (const b of [...byAuthor, ...byTitle]) {
+              const key = `${b.detailUrl}|${b.title}`;
+              if (!seen.has(key)) {
+                seen.add(key);
+                books.push(b);
+              }
+            }
+          }
+
+          const availableCount = books.filter(
+            (b) => b.status === 'available' || b.status === 'subscription_available'
+          ).length;
+
+          return {
+            books,
+            summary: {
+              libraryId: library.id,
+              libraryName: library.name,
+              resultCount: books.length,
+              availableCount,
+              status: 'ok',
+            },
+          };
+        } catch (err) {
+          return {
+            books: [],
+            summary: {
+              libraryId: library.id,
+              libraryName: library.name,
+              resultCount: 0,
+              availableCount: 0,
+              status: 'error',
+              errorMessage: err instanceof Error ? err.message : '검색 연결 오류',
+            },
+          };
+        }
+      }
+
+      function normalizeBookKey(title, author) {
+        const cleanTitle = title
+          .replace(/\[.*?\]/g, '')
+          .replace(/\(.*?(전자책|무선\s*보급판|리커버|특별판|개정판).*?\)/gi, '')
+          .replace(/[:\-·.,!?'"“”‘’\s]/g, '')
+          .toLowerCase();
+
+        const firstAuthor = author
+          .split(/[,/·]/)[0]
+          .replace(/\(.*?\)/g, '')
+          .replace(/(지음|글|저|역|옮김)/g, '')
+          .replace(/\s+/g, '')
+          .toLowerCase();
+
+        return `${cleanTitle}__${firstAuthor.slice(0, 6)}`;
+      }
+
+      function statusPriority(status) {
+        switch (status) {
+          case 'available': return 6;
+          case 'subscription_available': return 5;
+          case 'loaned': return 4;
+          case 'login_required': return 3;
+          case 'external_link': return 2;
+          case 'not_held': return 1;
+          default: return 0;
+        }
+      }
+
+      function buildLibraryDirectSearchUrl(library, query) {
+        if (library.searchUrlTemplate) {
+          return library.searchUrlTemplate.replace('{query}', encodeURIComponent(query));
+        }
+        const base = library.baseUrl.replace(/\/$/, '');
+        if (library.adapter === 'gangnam-asp') {
+          return `${base}/elibbook/book_info.asp?search=title&strSearch=${encodeEucKrQuery(query)}`;
+        }
+        if (library.adapter === 'kyobo-elibrary' || library.adapter === 'kyobo-root') {
+          return `${base}/search/searchList.ink?schDvsn=000&schTxt=${encodeURIComponent(query)}`;
+        }
+        return base;
+      }
+
+      async function searchLibrariesStandalone(query, field, libraries) {
+        const trimmed = query.trim();
+        const activeLibraries = libraries.filter((l) => l.enabled);
+
+        if (!trimmed || activeLibraries.length === 0) {
+          return {
+            query: trimmed,
+            field,
+            searchedAt: new Date().toISOString(),
+            books: [],
+            librarySummaries: [],
+          };
+        }
+
+        // If served alongside backend /api/search, use backend directly
+        if (
+          typeof window !== 'undefined' &&
+          window.location.protocol.startsWith('http') &&
+          !window.location.hostname.endsWith('github.io')
+        ) {
+          try {
+            const apiRes = await fetch('/api/search', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ query: trimmed, field, libraries }),
+            });
+            if (apiRes.ok) {
+              return await apiRes.json();
+            }
+          } catch {
+            // Fall through to pure client-side search
+          }
+        }
+
+        const libraryResults = await Promise.all(
+          activeLibraries.map(async (lib) => {
+            if (lib.adapter === 'kyobo-elibrary' || lib.adapter === 'kyobo-root') {
+              return searchKyoboLibraryClient(lib, trimmed, field);
+            }
+            if (lib.adapter === 'gangnam-asp') {
+              return searchGangnamLibraryClient(lib, trimmed, field);
+            }
+            if (lib.adapter === 'kyobo-subscription') {
+              return {
+                books: [],
+                summary: {
+                  libraryId: lib.id,
+                  libraryName: lib.name,
+                  resultCount: 0,
+                  availableCount: 0,
+                  status: 'auth_required',
+                },
+              };
+            }
+            return {
+              books: [],
+              summary: {
+                libraryId: lib.id,
+                libraryName: lib.name,
+                resultCount: 0,
+                availableCount: 0,
+                status: 'external',
+              },
+            };
+          })
+        );
+
+        const bookMap = new Map();
+        for (const res of libraryResults) {
+          for (const book of res.books) {
+            const key = normalizeBookKey(book.title, book.author);
+            let entry = bookMap.get(key);
+            if (!entry) {
+              entry = { canonical: book, byLibrary: new Map() };
+              bookMap.set(key, entry);
+            } else {
+              if (!entry.canonical.coverUrl && book.coverUrl) {
+                entry.canonical.coverUrl = book.coverUrl;
+              }
+              if (book.description.length > entry.canonical.description.length) {
+                entry.canonical.description = book.description;
+              }
+            }
+            const libList = entry.byLibrary.get(book.libraryId) || [];
+            libList.push(book);
+            entry.byLibrary.set(book.libraryId, libList);
+          }
+        }
+
+        const summaryMap = new Map(
+          libraryResults.map((r) => [r.summary.libraryId, r.summary])
+        );
+
+        const aggregatedBooks = [];
+        for (const [key, entry] of bookMap.entries()) {
+          const availabilities = activeLibraries.map((lib) => {
+            const libSummary = summaryMap.get(lib.id);
+            const matches = entry.byLibrary.get(lib.id);
+
+            if (matches && matches.length > 0) {
+              const sorted = [...matches].sort(
+                (a, b) =>
+                  statusPriority(b.status) - statusPriority(a.status) ||
+                  (b.availableCopies ?? 0) - (a.availableCopies ?? 0)
+              );
+              const best = sorted[0];
+              return {
+                libraryId: lib.id,
+                libraryName: lib.name,
+                category: lib.category,
+                status: best.status,
+                totalCopies: best.totalCopies,
+                loanedCopies: best.loanedCopies,
+                availableCopies: best.availableCopies,
+                reservedCount: best.reservedCount,
+                vendor: best.vendor,
+                matchedTitle: best.title,
+                detailUrl: best.detailUrl,
+                editions: sorted.length > 1 ? sorted : undefined,
+              };
+            }
+
+            if (lib.adapter === 'kyobo-subscription') {
+              return {
+                libraryId: lib.id,
+                libraryName: lib.name,
+                category: lib.category,
+                status: 'login_required',
+                detailUrl: buildLibraryDirectSearchUrl(lib, entry.canonical.title),
+                note: '구독형 서비스는 정회원 로그인 후 도서관/교보 앱에서 즉시 대출 여부를 확인할 수 있습니다.',
+              };
+            }
+
+            if (lib.adapter === 'custom-link') {
+              return {
+                libraryId: lib.id,
+                libraryName: lib.name,
+                category: lib.category,
+                status: 'external_link',
+                detailUrl: buildLibraryDirectSearchUrl(lib, entry.canonical.title),
+                note: '외부 도서관 검색 페이지로 이동해 소장 여부를 확인하세요.',
+              };
+            }
+
+            if (libSummary && libSummary.status === 'error') {
+              return {
+                libraryId: lib.id,
+                libraryName: lib.name,
+                category: lib.category,
+                status: 'error',
+                detailUrl: buildLibraryDirectSearchUrl(lib, entry.canonical.title),
+                note: `조회 실패 (${libSummary.errorMessage || '네트워크 오류'})`,
+              };
+            }
+
+            return {
+              libraryId: lib.id,
+              libraryName: lib.name,
+              category: lib.category,
+              status: 'not_held',
+              detailUrl: buildLibraryDirectSearchUrl(lib, entry.canonical.title),
+            };
+          });
+
+          const availableLibraryCount = availabilities.filter(
+            (a) => a.status === 'available' || a.status === 'subscription_available'
+          ).length;
+
+          const heldLibraryCount = availabilities.filter(
+            (a) =>
+              a.status === 'available' ||
+              a.status === 'subscription_available' ||
+              a.status === 'loaned'
+          ).length;
+
+          aggregatedBooks.push({
+            id: key,
+            title: entry.canonical.title,
+            author: entry.canonical.author,
+            publisher: entry.canonical.publisher,
+            publishDate: entry.canonical.publishDate,
+            description: entry.canonical.description,
+            coverUrl: entry.canonical.coverUrl,
+            format: entry.canonical.format || '전자책',
+            availableLibraryCount,
+            heldLibraryCount,
+            availabilities,
+          });
+        }
+
+        // If all live-searchable libraries returned network/CORS errors (e.g. strict file:// blocking),
+        // surface a clean direct-search card so the user can still jump straight to every library!
+        const allFailed =
+          aggregatedBooks.length === 0 &&
+          libraryResults.some((r) => r.summary.status === 'error');
+
+        if (allFailed) {
+          aggregatedBooks.push({
+            id: `direct-query-${trimmed}`,
+            title: `"${trimmed}" 도서관별 직접 검색`,
+            author: '가입 도서관 통합 바로가기',
+            publisher: `${activeLibraries.length}개 도서관 검색 링크`,
+            publishDate: '',
+            description:
+              '현재 실행 환경의 브라우저 보안 정책(CORS)으로 실시간 자동 수집이 제한되어, 각 전자도서관의 검색 페이지로 바로 이동할 수 있도록 연결합니다.',
+            coverUrl: '',
+            format: '바로가기',
+            availableLibraryCount: 0,
+            heldLibraryCount: 0,
+            availabilities: activeLibraries.map((lib) => ({
+              libraryId: lib.id,
+              libraryName: lib.name,
+              category: lib.category,
+              status:
+                lib.adapter === 'kyobo-subscription'
+                  ? 'login_required'
+                  : 'external_link',
+              detailUrl: buildLibraryDirectSearchUrl(lib, trimmed),
+              note:
+                lib.adapter === 'kyobo-subscription'
+                  ? '정회원 로그인 후 구독형 메뉴에서 바로 대출할 수 있습니다.'
+                  : `"${trimmed}" 검색 결과 페이지로 이동해 대출 가능 여부를 확인하세요.`,
+            })),
+          });
+        }
+
+        const lowerQuery = trimmed.toLowerCase();
+        aggregatedBooks.sort((a, b) => {
+          const aExact =
+            a.title.toLowerCase().includes(lowerQuery) ||
+            a.author.toLowerCase().includes(lowerQuery)
+              ? 1
+              : 0;
+          const bExact =
+            b.title.toLowerCase().includes(lowerQuery) ||
+            b.author.toLowerCase().includes(lowerQuery)
+              ? 1
+              : 0;
+          if (aExact !== bExact) return bExact - aExact;
+          if (a.availableLibraryCount !== b.availableLibraryCount) {
+            return b.availableLibraryCount - a.availableLibraryCount;
+          }
+          return b.heldLibraryCount - a.heldLibraryCount;
+        });
+
+        return {
+          query: trimmed,
+          field,
+          searchedAt: new Date().toISOString(),
+          books: aggregatedBooks,
+          librarySummaries: libraryResults.map((r) => r.summary),
+        };
+      }
+
+      const IGNORED_WEB_HOSTS = [
+        'naver.com', 'daum.net', 'kakao.com', 'tistory.com', 'youtube.com',
+        'youtu.be', 'google.com', 'namu.wiki', 'wikipedia.org', 'instagram.com',
+        'facebook.com', 'x.com', 'twitter.com', 'play.google.com', 'apps.apple.com',
+        'yes24.com', 'aladin.co.kr', 'www.kyobobook.co.kr', 'brunch.co.kr',
+        'velog.io', 'visitkorea.or.kr',
+      ];
+
+      function sanitizeLibraryName(raw) {
+        return (raw || '')
+          .replace(/새\s*창\s*열림/g, '')
+          .replace(/\s*[-|:]\s*(홈페이지|메인|안내).*$/g, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+      }
+
+      function isRelevantLibraryHost(hostname) {
+        const lower = hostname.toLowerCase();
+        if (IGNORED_WEB_HOSTS.some((bad) => lower === bad || lower.endsWith(`.${bad}`))) {
+          return false;
+        }
+        return (
+          lower.includes('lib') ||
+          lower.includes('ebook') ||
+          lower.includes('elib') ||
+          lower.includes('book') ||
+          lower.includes('dkyobobook') ||
+          lower.includes('bookcube') ||
+          lower.includes('nanet')
+        );
+      }
+
+      async function discoverLibrariesStandalone(query) {
+        const trimmed = query.trim();
+        const catalog = [...PRESET_LIBRARIES, ...DEFAULT_LIBRARIES].filter(
+          (item, index, self) => self.findIndex((x) => x.id === item.id) === index
+        );
+
+        const toCandidate = (lib) => {
+          const isRealtime =
+            lib.adapter === 'kyobo-elibrary' ||
+            lib.adapter === 'kyobo-root' ||
+            lib.adapter === 'gangnam-asp';
+          return {
+            library: { ...lib, enabled: true },
+            supportLevel: isRealtime ? 'realtime' : 'link',
+            supportLabel: isRealtime
+              ? '실시간 대출여부 조회 지원'
+              : lib.adapter === 'kyobo-subscription'
+                ? '구독형 로그인 연동'
+                : '외부 도서관 검색 연동',
+            source: 'directory',
+          };
+        };
+
+        if (!trimmed) {
+          return catalog.map(toCandidate);
+        }
+
+        // Try backend if hosted alongside server.ts
+        if (
+          typeof window !== 'undefined' &&
+          window.location.protocol.startsWith('http') &&
+          !window.location.hostname.endsWith('github.io')
+        ) {
+          try {
+            const res = await fetch(`/api/discover-libraries?q=${encodeURIComponent(trimmed)}`);
+            if (res.ok) {
+              const data = await res.json();
+              if (Array.isArray(data.candidates)) return data.candidates;
+            }
+          } catch {
+            // Fall through to client discovery
+          }
+        }
+
+        const normQ = trimmed.replace(/\s+/g, '').toLowerCase();
+        const directoryMatches = catalog
+          .filter((lib) => {
+            const hay = `${lib.name} ${lib.shortName} ${lib.description || ''}`
+              .replace(/\s+/g, '')
+              .toLowerCase();
+            return hay.includes(normQ);
+          })
+          .map(toCandidate);
+
+        const seenOrigins = new Set();
+        for (const m of directoryMatches) {
+          try {
+            seenOrigins.add(new URL(m.library.baseUrl).origin);
+          } catch {}
+        }
+
+        const webMatches = [];
+        try {
+          const searchKeyword = trimmed.includes('도서관') ? trimmed : `${trimmed} 전자도서관`;
+          const searchUrl = `https://search.naver.com/search.naver?query=${encodeURIComponent(searchKeyword)}`;
+          const html = await fetchProxiedHtml(searchUrl, 'utf-8', 9000);
+          const doc = new DOMParser().parseFromString(html, 'text/html');
+          const candidateMap = new Map();
+
+          doc.querySelectorAll('a[href^="http"]').forEach((el) => {
+            const href = el.getAttribute('href') || '';
+            try {
+              const parsed = new URL(href);
+              if (!isRelevantLibraryHost(parsed.hostname)) return;
+              if (seenOrigins.has(parsed.origin) || candidateMap.has(parsed.origin)) return;
+              const anchorText = sanitizeLibraryName(cleanText(el.textContent));
+              const scoreBoost =
+                parsed.hostname.includes('ebook') ||
+                parsed.hostname.includes('elib') ||
+                parsed.hostname.includes('dkyobobook');
+              if (scoreBoost || anchorText.includes('도서관')) {
+                const label =
+                  anchorText.length >= 2 && anchorText.length <= 32
+                    ? anchorText
+                    : searchKeyword;
+                candidateMap.set(parsed.origin, label);
+              }
+            } catch {}
+          });
+
+          const sortedOrigins = Array.from(candidateMap.entries())
+            .sort((a, b) => {
+              const aScore = /ebook|elib|dkyobobook|book/i.test(a[0]) ? 1 : 0;
+              const bScore = /ebook|elib|dkyobobook|book/i.test(b[0]) ? 1 : 0;
+              return bScore - aScore;
+            })
+            .slice(0, 3);
+
+          const probed = await Promise.all(
+            sortedOrigins.map(async ([origin, label]) => {
+              const kyoboList = [
+                { adapter: 'kyobo-elibrary', baseUrl: `${origin}/elibrary-front` },
+                { adapter: 'kyobo-root', baseUrl: origin },
+              ];
+              for (const cand of kyoboList) {
+                try {
+                  const testUrl = `${cand.baseUrl}/search/searchList.ink?schDvsn=000&schTxt=${encodeURIComponent('책')}`;
+                  const kHtml = await fetchProxiedHtml(testUrl, 'utf-8', 7000);
+                  if (kHtml.includes('book_resultList')) {
+                    const kDoc = new DOMParser().parseFromString(kHtml, 'text/html');
+                    const metaTitle = sanitizeLibraryName(
+                      cleanText(kDoc.querySelector('meta[name="title"]')?.getAttribute('content') || '') ||
+                        cleanText((kDoc.querySelector('title')?.textContent || '').split('|').pop())
+                    );
+                    const finalName = metaTitle && metaTitle.length >= 2 ? metaTitle : label;
+                    return {
+                      library: {
+                        id: `web-${origin.replace(/[^a-z0-9]/gi, '-')}`,
+                        name: finalName,
+                        shortName: finalName.replace(/\s*전자도서관.*$/, '').slice(0, 8) || finalName.slice(0, 8),
+                        category: 'owned',
+                        adapter: cand.adapter,
+                        baseUrl: cand.baseUrl,
+                        enabled: true,
+                        description: `${finalName} (실시간 소장·대출 조회)`,
+                      },
+                      supportLevel: 'realtime',
+                      supportLabel: '실시간 대출여부 조회 지원',
+                      source: 'web',
+                    };
+                  }
+                } catch {}
+              }
+
+              return {
+                library: {
+                  id: `web-${origin.replace(/[^a-z0-9]/gi, '-')}`,
+                  name: label,
+                  shortName: label.replace(/\s*전자도서관.*$/, '').slice(0, 8) || label.slice(0, 8),
+                  category: label.includes('구독') ? 'subscription' : 'owned',
+                  adapter: 'custom-link',
+                  baseUrl: origin,
+                  enabled: true,
+                  description: `${new URL(origin).hostname} 공식 전자도서관`,
+                },
+                supportLevel: 'link',
+                supportLabel: '공식 도서관 링크 연동',
+                source: 'web',
+              };
+            })
+          );
+
+          for (const item of probed) {
+            if (item) webMatches.push(item);
+          }
+        } catch {
+          // Directory results still return cleanly
+        }
+
+        return [...directoryMatches, ...webMatches];
+      }
+
+      async function testCustomLibraryConnectionClient(baseUrl, adapter) {
+        const normalized = baseUrl.trim().replace(/\/$/, '');
+        if (!normalized.startsWith('http://') && !normalized.startsWith('https://')) {
+          return {
+            ok: false,
+            sampleCount: 0,
+            message: 'http:// 또는 https:// 로 시작하는 주소를 입력해 주세요.',
+          };
+        }
+
+        if (adapter === 'custom-link' || adapter === 'kyobo-subscription') {
+          return {
+            ok: true,
+            detectedAdapter: adapter,
+            sampleCount: 0,
+            message: '외부 검색 / 로그인 연동 방식으로 등록할 수 있습니다.',
+          };
+        }
+
+        const candidates =
+          adapter === 'kyobo-root'
+            ? [
+                { adapter: 'kyobo-root', url: normalized },
+                { adapter: 'kyobo-elibrary', url: `${normalized}/elibrary-front` },
+              ]
+            : [
+                {
+                  adapter: 'kyobo-elibrary',
+                  url: normalized.endsWith('/elibrary-front')
+                    ? normalized
+                    : `${normalized}/elibrary-front`,
+                },
+                { adapter: 'kyobo-root', url: normalized },
+              ];
+
+        for (const candidate of candidates) {
+          try {
+            const testUrl = `${candidate.url}/search/searchList.ink?schDvsn=000&schTxt=${encodeURIComponent('책')}`;
+            const html = await fetchProxiedHtml(testUrl, 'utf-8', 8000);
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            const count = doc.querySelectorAll('.book_resultList > li').length;
+            if (html.includes('book_resultList') || count > 0) {
+              return {
+                ok: true,
+                detectedAdapter: candidate.adapter,
+                sampleCount: count,
+                message: `실시간 검색 연동 확인 완료 (테스트 검색 ${count}건)`,
+              };
+            }
+          } catch {}
+        }
+
+        return {
+          ok: false,
+          sampleCount: 0,
+          message: '교보문고 전자도서관 검색 페이지에 연결할 수 없습니다. 외부 검색 링크 방식으로 등록할 수 있습니다.',
+        };
+      }
+
+      // =========================================================
+      // UI Components (Identical structure & design to main app)
+      // =========================================================
+      function BookCover({ src, title, size = 'md' }) {
+        const [failed, setFailed] = useState(false);
+
+        useEffect(() => {
+          setFailed(false);
+        }, [src]);
+
+        const dimensions =
+          size === 'sm'
+            ? 'w-12 h-[68px]'
+            : size === 'lg'
+              ? 'w-24 h-[136px]'
+              : 'w-16 h-[92px]';
+
+        if (!src || failed) {
+          return (
+            <div
+              className={`${dimensions} shrink-0 rounded-md border border-slate-200 bg-gradient-to-br from-slate-100 via-slate-50 to-slate-200/80 flex flex-col items-center justify-center p-1.5 text-center select-none overflow-hidden`}
+              aria-label={title}
+            >
+              <BookOpenIcon className="w-4 h-4 text-slate-400 mb-1 shrink-0" />
+              <span className="text-[10px] leading-tight font-medium text-slate-500 line-clamp-3 break-keep">
+                {title}
+              </span>
+            </div>
+          );
+        }
+
+        return (
+          <div
+            className={`${dimensions} shrink-0 rounded-md border border-slate-200/90 bg-slate-100 overflow-hidden relative`}
+          >
+            <img
+              src={src}
+              alt={title}
+              referrerPolicy="no-referrer"
+              loading="lazy"
+              onError={() => setFailed(true)}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        );
+      }
+
+      function LibrarySidebar({
+        libraries,
+        summaries,
+        isSearching,
+        onToggleLibrary,
+        onRemoveLibrary,
+        onOpenAddModal,
+        onResetDefaults,
+      }) {
+        const enabledCount = libraries.filter((l) => l.enabled).length;
+        const summaryMap = new Map(summaries.map((s) => [s.libraryId, s]));
+
+        return (
+          <aside className="w-full lg:w-[276px] shrink-0 bg-white border border-slate-200 rounded-xl p-4 flex flex-col gap-4">
+            <div className="flex items-center justify-between gap-2 pb-3 border-b border-slate-100">
+              <div>
+                <h2 className="text-sm font-semibold text-slate-900">내 가입 도서관</h2>
+                <p className="text-xs text-slate-500 mt-0.5 tabular-nums">
+                  {enabledCount}/{libraries.length}개 검색 대상 포함
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={onResetDefaults}
+                title="기본 5개 도서관 목록으로 복원"
+                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+              >
+                <RotateCcwIcon className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <ul className="flex flex-col gap-1.5" role="list">
+              {libraries.map((lib) => {
+                const summary = summaryMap.get(lib.id);
+                return (
+                  <li
+                    key={lib.id}
+                    className={`group flex items-start justify-between gap-2 rounded-lg px-2.5 py-2 transition-colors ${
+                      lib.enabled
+                        ? 'bg-slate-50/80 hover:bg-slate-100/80'
+                        : 'opacity-60 hover:opacity-85 hover:bg-slate-50'
+                    }`}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => onToggleLibrary(lib.id)}
+                      className="flex items-start gap-2.5 text-left flex-1 min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded"
+                    >
+                      <span
+                        className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
+                          lib.enabled
+                            ? 'bg-blue-700 border-blue-700 text-white'
+                            : 'bg-white border-slate-300 text-transparent'
+                        }`}
+                      >
+                        <CheckIcon className="w-3 h-3" />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-[13px] font-medium text-slate-900 truncate">
+                          {lib.name}
+                        </div>
+                        <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5">
+                          <span>
+                            {lib.category === 'subscription' ? '구독형' : '소장형'}
+                          </span>
+                          <span aria-hidden="true">·</span>
+                          {isSearching && lib.enabled ? (
+                            <span className="text-blue-700">조회 중...</span>
+                          ) : summary && lib.enabled ? (
+                            summary.status === 'ok' ? (
+                              <span className="tabular-nums text-slate-600">
+                                {summary.resultCount}건
+                                {summary.availableCount > 0
+                                  ? ` (대출가능 ${summary.availableCount})`
+                                  : ''}
+                              </span>
+                            ) : summary.status === 'auth_required' ? (
+                              <span className="text-blue-700">로그인 연동</span>
+                            ) : summary.status === 'external' ? (
+                              <span className="text-slate-500">외부 링크</span>
+                            ) : (
+                              <span className="text-rose-600">직접 확인</span>
+                            )
+                          ) : (
+                            <span>{lib.enabled ? '검색 대기' : '제외됨'}</span>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+
+                    {libraries.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => onRemoveLibrary(lib.id)}
+                        aria-label={`${lib.name} 목록에서 제거`}
+                        className="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 focus:opacity-100 p-2 -mr-1 min-w-[36px] min-h-[36px] flex items-center justify-center text-slate-400 hover:text-rose-600 rounded transition-opacity"
+                      >
+                        <Trash2Icon className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+
+            <button
+              type="button"
+              onClick={onOpenAddModal}
+              className="w-full min-h-[44px] py-2.5 px-3 rounded-lg border border-dashed border-slate-300 text-[13px] font-medium text-slate-700 hover:border-blue-600 hover:text-blue-700 hover:bg-blue-50/40 transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap"
+            >
+              <PlusIcon className="w-4 h-4" />
+              <span>도서관 목록 추가</span>
+            </button>
+          </aside>
+        );
+      }
+
+      function StatusIndicator({ status }) {
+        switch (status) {
+          case 'available':
+            return (
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 whitespace-nowrap">
+                <CheckCircle2Icon className="w-4 h-4 shrink-0" />
+                <span>대출 가능</span>
+              </span>
+            );
+          case 'subscription_available':
+            return (
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 whitespace-nowrap">
+                <CheckCircle2Icon className="w-4 h-4 shrink-0" />
+                <span>구독형 · 즉시 대출</span>
+              </span>
+            );
+          case 'loaned':
+            return (
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-700 whitespace-nowrap">
+                <ClockIcon className="w-4 h-4 shrink-0" />
+                <span>대출중 · 예약 가능</span>
+              </span>
+            );
+          case 'login_required':
+            return (
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-700 whitespace-nowrap">
+                <KeyRoundIcon className="w-4 h-4 shrink-0" />
+                <span>구독형 · 로그인 확인</span>
+              </span>
+            );
+          case 'external_link':
+            return (
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 whitespace-nowrap">
+                <ExternalLinkIcon className="w-4 h-4 shrink-0" />
+                <span>도서관 직접 확인</span>
+              </span>
+            );
+          case 'error':
+            return (
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-rose-700 whitespace-nowrap">
+                <AlertCircleIcon className="w-4 h-4 shrink-0" />
+                <span>조회 오류</span>
+              </span>
+            );
+          case 'not_held':
+          default:
+            return (
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 whitespace-nowrap">
+                <MinusCircleIcon className="w-4 h-4 shrink-0" />
+                <span>미소장</span>
+              </span>
+            );
+        }
+      }
+
+      function formatCopyMetrics(item) {
+        if (
+          typeof item.totalCopies === 'number' &&
+          typeof item.loanedCopies === 'number'
+        ) {
+          const remaining =
+            item.availableCopies !== undefined
+              ? item.availableCopies
+              : Math.max(0, item.totalCopies - item.loanedCopies);
+          const reserveText =
+            typeof item.reservedCount === 'number'
+              ? ` · 예약 ${item.reservedCount}명`
+              : '';
+          return `잔여 ${remaining}권 (대출 ${item.loanedCopies}/${item.totalCopies}${reserveText})`;
+        }
+        return null;
+      }
+
+      function BookDetailPanel({ book, onCloseMobile }) {
+        if (!book) {
+          return (
+            <div className="bg-white border border-slate-200 rounded-xl p-8 flex flex-col items-center justify-center text-center min-h-[420px]">
+              <div className="w-11 h-11 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
+                <BookMarkedIcon className="w-5 h-5" />
+              </div>
+              <h3 className="text-sm font-semibold text-slate-900">
+                도서를 선택해 주세요
+              </h3>
+              <p className="text-xs text-slate-500 mt-1.5 max-w-[260px] leading-relaxed">
+                검색 결과에서 책을 선택하면 가입한 도서관별 소장 여부와 실시간 대출 가능 권수를 한눈에 비교할 수 있습니다.
+              </p>
+            </div>
+          );
+        }
+
+        return (
+          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden flex flex-col">
+            <div className="p-5 border-b border-slate-100">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-4 min-w-0">
+                  <BookCover src={book.coverUrl} title={book.title} size="lg" />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs text-slate-500 flex flex-wrap items-center gap-1.5">
+                      <span>{book.format}</span>
+                      <span aria-hidden="true">·</span>
+                      <span>{book.publisher}</span>
+                      {book.publishDate && (
+                        <>
+                          <span aria-hidden="true">·</span>
+                          <span className="tabular-nums">{book.publishDate}</span>
+                        </>
+                      )}
+                    </div>
+                    <h2
+                      className="text-lg font-bold text-slate-900 mt-1 leading-snug break-keep"
+                      style={{ textWrap: 'balance' }}
+                    >
+                      {book.title}
+                    </h2>
+                    <p className="text-sm text-slate-700 mt-1 font-medium">
+                      {book.author}
+                    </p>
+                    <div className="mt-3 text-xs font-medium text-slate-600 tabular-nums">
+                      {book.availableLibraryCount > 0 ? (
+                        <span className="text-emerald-700">
+                          현재 {book.availableLibraryCount}개 도서관에서 바로 대출 가능
+                        </span>
+                      ) : book.heldLibraryCount > 0 ? (
+                        <span className="text-amber-700">
+                          소장 {book.heldLibraryCount}곳 모두 대출중 (예약 가능)
+                        </span>
+                      ) : (
+                        <span>도서관별 확인 필요</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {onCloseMobile && (
+                  <button
+                    type="button"
+                    onClick={onCloseMobile}
+                    aria-label="상세 패널 닫기"
+                    className="xl:hidden min-w-[40px] min-h-[40px] flex items-center justify-center shrink-0 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg"
+                  >
+                    <XIcon className="w-5 h-5" />
+                  </button>
+                )}
+              </div>
+
+              {book.description && (
+                <p className="mt-4 text-xs text-slate-600 leading-relaxed line-clamp-3">
+                  {book.description}
+                </p>
+              )}
+            </div>
+
+            <div className="px-5 py-3 bg-slate-50/70 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="text-xs font-semibold text-slate-800">
+                도서관별 대출 가능여부 ({book.availabilities.length}곳)
+              </h3>
+              <span className="text-[11px] text-slate-500">실시간 조회 기준</span>
+            </div>
+
+            <ul className="divide-y divide-slate-100" role="list">
+              {book.availabilities.map((item) => {
+                const metrics = formatCopyMetrics(item);
+                const isActionable =
+                  item.status === 'available' ||
+                  item.status === 'subscription_available' ||
+                  item.status === 'loaned' ||
+                  item.status === 'login_required' ||
+                  item.status === 'external_link';
+
+                return (
+                  <li
+                    key={item.libraryId}
+                    className={`px-5 py-3.5 transition-colors ${
+                      item.status === 'available' ||
+                      item.status === 'subscription_available'
+                        ? 'bg-emerald-50/25'
+                        : 'bg-white'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-sm font-semibold text-slate-900">
+                            {item.libraryName}
+                          </span>
+                          <span className="text-[11px] text-slate-500">
+                            {item.category === 'subscription' ? '구독형' : '소장형'}
+                            {item.vendor ? ` · ${item.vendor}` : ''}
+                          </span>
+                        </div>
+
+                        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
+                          <StatusIndicator status={item.status} />
+                          {metrics && (
+                            <span className="text-xs text-slate-600 tabular-nums font-mono">
+                              {metrics}
+                            </span>
+                          )}
+                        </div>
+
+                        {item.matchedTitle && item.matchedTitle !== book.title && (
+                          <p className="text-[11px] text-slate-500 mt-1 truncate">
+                            도서관 표기: {item.matchedTitle}
+                          </p>
+                        )}
+
+                        {item.note && (
+                          <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
+                            {item.note}
+                          </p>
+                        )}
+
+                        {item.editions && item.editions.length > 1 && (
+                          <div className="mt-2 pt-2 border-t border-slate-100 flex flex-col gap-1">
+                            {item.editions.map((ed, idx) => (
+                              <div
+                                key={`${ed.detailUrl}-${idx}`}
+                                className="flex items-center justify-between text-[11px] text-slate-600 gap-2"
+                              >
+                                <span className="truncate">
+                                  {ed.vendor || '전자책'} · {ed.title}
+                                </span>
+                                <span className="tabular-nums shrink-0 font-mono">
+                                  {typeof ed.totalCopies === 'number'
+                                    ? `잔여 ${ed.availableCopies ?? 0}/${ed.totalCopies}`
+                                    : ''}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {isActionable ? (
+                        <a
+                          href={item.detailUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
+                            item.status === 'available' ||
+                            item.status === 'subscription_available'
+                              ? 'bg-blue-700 text-white hover:bg-blue-800'
+                              : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900'
+                          }`}
+                        >
+                          <span>
+                            {item.status === 'available' ||
+                            item.status === 'subscription_available'
+                              ? '대출하기'
+                              : item.status === 'loaned'
+                                ? '예약하기'
+                                : '도서관 열기'}
+                          </span>
+                          <ExternalLinkIcon className="w-3 h-3" />
+                        </a>
+                      ) : (
+                        <a
+                          href={item.detailUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="shrink-0 text-xs text-slate-400 hover:text-slate-700 px-2 py-1.5 whitespace-nowrap"
+                        >
+                          직접 검색
+                        </a>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        );
+      }
+
+      const SUGGESTED_LIBRARY_TERMS = [
+        '용인시',
+        '마포구',
+        '송파구',
+        '성남시',
+        '경기도',
+        '부산',
+      ];
+
+      function AddLibraryModal({ isOpen, libraries, onClose, onAddLibrary }) {
+        const [activeTab, setActiveTab] = useState('search');
+        const [searchQuery, setSearchQuery] = useState('');
+        const [isSearching, setIsSearching] = useState(false);
+        const [webCandidates, setWebCandidates] = useState([]);
+        const [hasQueriedWeb, setHasQueriedWeb] = useState(false);
+        const [searchError, setSearchError] = useState(null);
+
+        const [name, setName] = useState('');
+        const [baseUrl, setBaseUrl] = useState('');
+        const [category, setCategory] = useState('owned');
+        const [adapter, setAdapter] = useState('kyobo-elibrary');
+        const [searchTemplate, setSearchTemplate] = useState('');
+        const [testing, setTesting] = useState(false);
+        const [testResult, setTestResult] = useState(null);
+
+        const localCatalog = useMemo(() => {
+          const merged = [...PRESET_LIBRARIES, ...DEFAULT_LIBRARIES].filter(
+            (item, index, self) => self.findIndex((x) => x.id === item.id) === index
+          );
+          return merged.map((lib) => {
+            const isRealtime =
+              lib.adapter === 'kyobo-elibrary' ||
+              lib.adapter === 'kyobo-root' ||
+              lib.adapter === 'gangnam-asp';
+            return {
+              library: { ...lib, enabled: true },
+              supportLevel: isRealtime ? 'realtime' : 'link',
+              supportLabel: isRealtime
+                ? '실시간 대출여부 조회 지원'
+                : lib.adapter === 'kyobo-subscription'
+                  ? '구독형 로그인 연동'
+                  : '외부 도서관 검색 연동',
+              source: 'directory',
+            };
+          });
+        }, []);
+
+        const filteredLocal = useMemo(() => {
+          const trimmed = searchQuery.trim().replace(/\s+/g, '').toLowerCase();
+          if (!trimmed) return localCatalog;
+          return localCatalog.filter((item) => {
+            const hay = `${item.library.name} ${item.library.shortName} ${item.library.description || ''}`
+              .replace(/\s+/g, '')
+              .toLowerCase();
+            return hay.includes(trimmed);
+          });
+        }, [localCatalog, searchQuery]);
+
+        const runLibraryDiscovery = useCallback(async (keyword) => {
+          const trimmed = keyword.trim();
+          if (!trimmed) {
+            setWebCandidates([]);
+            setHasQueriedWeb(false);
+            setSearchError(null);
+            return;
+          }
+
+          setIsSearching(true);
+          setSearchError(null);
+
+          try {
+            const candidates = await discoverLibrariesStandalone(trimmed);
+            setWebCandidates(candidates);
+            setHasQueriedWeb(true);
+          } catch {
+            setSearchError('도서관 검색 중 일시적인 오류가 발생했습니다.');
+          } finally {
+            setIsSearching(false);
+          }
+        }, []);
+
+        useEffect(() => {
+          if (!isOpen || activeTab !== 'search') return;
+          const trimmed = searchQuery.trim();
+          if (trimmed.length < 2) {
+            setWebCandidates([]);
+            setHasQueriedWeb(false);
+            return;
+          }
+          const timer = setTimeout(() => {
+            runLibraryDiscovery(trimmed);
+          }, 450);
+          return () => clearTimeout(timer);
+        }, [searchQuery, isOpen, activeTab, runLibraryDiscovery]);
+
+        if (!isOpen) return null;
+
+        const existingIds = new Set(libraries.map((l) => l.id));
+        const existingUrls = new Set(
+          libraries.map((l) => l.baseUrl.replace(/\/$/, '').toLowerCase())
+        );
+
+        function isAlreadyAdded(lib) {
+          if (existingIds.has(lib.id)) return true;
+          return existingUrls.has(lib.baseUrl.replace(/\/$/, '').toLowerCase());
+        }
+
+        const displayedCandidates = (() => {
+          if (!searchQuery.trim()) return localCatalog;
+          if (hasQueriedWeb && webCandidates.length > 0) {
+            const seen = new Set(webCandidates.map((c) => c.library.id));
+            return [
+              ...webCandidates,
+              ...filteredLocal.filter((c) => !seen.has(c.library.id)),
+            ];
+          }
+          return filteredLocal;
+        })();
+
+        function handleSearchSubmit(e) {
+          e.preventDefault();
+          runLibraryDiscovery(searchQuery);
+        }
+
+        async function handleTestConnection() {
+          if (!baseUrl.trim()) return;
+          setTesting(true);
+          setTestResult(null);
+          try {
+            const data = await testCustomLibraryConnectionClient(
+              baseUrl.trim(),
+              adapter
+            );
+            setTestResult(data);
+            if (data.ok && data.detectedAdapter) {
+              setAdapter(data.detectedAdapter);
+            }
+          } catch {
+            setTestResult({
+              ok: false,
+              message: '연결 테스트 요청에 실패했습니다.',
+            });
+          } finally {
+            setTesting(false);
+          }
+        }
+
+        function handleCustomSubmit(e) {
+          e.preventDefault();
+          if (!name.trim() || !baseUrl.trim()) return;
+
+          let cleanUrl = baseUrl.trim().replace(/\/$/, '');
+          if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+            cleanUrl = `https://${cleanUrl}`;
+          }
+          if (
+            adapter === 'kyobo-elibrary' &&
+            !cleanUrl.endsWith('/elibrary-front')
+          ) {
+            cleanUrl = `${cleanUrl}/elibrary-front`;
+          }
+
+          const newLib = {
+            id: `custom-${Date.now()}`,
+            name: name.trim(),
+            shortName: name.trim().slice(0, 8),
+            category,
+            adapter,
+            baseUrl: cleanUrl,
+            searchUrlTemplate:
+              adapter === 'custom-link' && searchTemplate.trim()
+                ? searchTemplate.trim()
+                : undefined,
+            enabled: true,
+            description:
+              adapter === 'custom-link'
+                ? '사용자 지정 검색 링크 연동'
+                : '사용자 추가 전자도서관',
+          };
+
+          onAddLibrary(newLib);
+          setName('');
+          setBaseUrl('');
+          setSearchTemplate('');
+          setTestResult(null);
+          onClose();
+        }
+
+        return (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/45 p-3 sm:p-4"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="add-library-title"
+          >
+            <div className="w-full max-w-xl bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden flex flex-col max-h-[90dvh]">
+              <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
+                <div>
+                  <h2
+                    id="add-library-title"
+                    className="text-base font-bold text-slate-900"
+                  >
+                    전자도서관 검색 · 추가
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    도서관 이름만 입력하면 자동으로 전자도서관 주소를 찾아 추가합니다.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  aria-label="창 닫기"
+                  className="min-w-[40px] min-h-[40px] flex items-center justify-center shrink-0 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg"
+                >
+                  <XIcon className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="px-5 pt-3 border-b border-slate-100 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('search')}
+                  className={`px-3 py-2 text-xs font-semibold border-b-2 transition-colors whitespace-nowrap ${
+                    activeTab === 'search'
+                      ? 'border-blue-700 text-blue-700'
+                      : 'border-transparent text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  도서관 명으로 검색
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('custom')}
+                  className={`px-3 py-2 text-xs font-semibold border-b-2 transition-colors whitespace-nowrap ${
+                    activeTab === 'custom'
+                      ? 'border-blue-700 text-blue-700'
+                      : 'border-transparent text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  직접 URL로 추가
+                </button>
+              </div>
+
+              <div className="p-5 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] flex-1 flex flex-col gap-4">
+                {activeTab === 'search' ? (
+                  <>
+                    <form onSubmit={handleSearchSubmit} className="flex gap-2">
+                      <div className="relative flex-1 flex items-center border border-slate-300 rounded-lg bg-white focus-within:ring-2 focus-within:ring-blue-600 focus-within:border-blue-600">
+                        <SearchIcon className="w-4 h-4 text-slate-400 ml-3 shrink-0" />
+                        <label htmlFor="discover-library-input" className="sr-only">
+                          도서관 이름 검색
+                        </label>
+                        <input
+                          id="discover-library-input"
+                          type="search"
+                          enterKeyHint="search"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          placeholder="도서관 명을 입력하세요 (예: 용인시, 송파구, 부산, 성남시)"
+                          className="w-full px-3 py-2.5 text-[16px] sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
+                        />
+                        {searchQuery && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSearchQuery('');
+                              setWebCandidates([]);
+                              setHasQueriedWeb(false);
+                            }}
+                            aria-label="검색어 지우기"
+                            className="p-2 mr-1 text-slate-400 hover:text-slate-700 rounded"
+                          >
+                            <XIcon className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={isSearching || !searchQuery.trim()}
+                        className="px-4 py-2 min-h-[44px] sm:min-h-0 rounded-lg bg-slate-900 text-white text-xs font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors whitespace-nowrap shrink-0 flex items-center gap-1.5"
+                      >
+                        {isSearching && (
+                          <Loader2Icon className="w-3.5 h-3.5 animate-spin" />
+                        )}
+                        <span>검색</span>
+                      </button>
+                    </form>
+
+                    <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                      <span className="text-slate-500">빠른 찾기:</span>
+                      {SUGGESTED_LIBRARY_TERMS.map((term) => (
+                        <button
+                          key={term}
+                          type="button"
+                          onClick={() => {
+                            setSearchQuery(term);
+                            runLibraryDiscovery(term);
+                          }}
+                          className={`px-2.5 py-1 rounded-md transition-colors whitespace-nowrap ${
+                            searchQuery === term
+                              ? 'bg-blue-50 text-blue-700 font-semibold'
+                              : 'bg-slate-100 text-slate-700 hover:bg-slate-200/70'
+                          }`}
+                        >
+                          {term}
+                        </button>
+                      ))}
+                    </div>
+
+                    {searchError && (
+                      <p className="text-xs text-rose-600">{searchError}</p>
+                    )}
+
+                    {isSearching && displayedCandidates.length === 0 ? (
+                      <div className="py-10 flex flex-col items-center justify-center text-center gap-2 text-xs text-slate-500 border border-slate-200 rounded-lg">
+                        <Loader2Icon className="w-5 h-5 animate-spin text-blue-700" />
+                        <span>
+                          &ldquo;{searchQuery}&rdquo; 공식 전자도서관 주소를 검색하고 있습니다...
+                        </span>
+                      </div>
+                    ) : displayedCandidates.length === 0 ? (
+                      <div className="py-10 px-4 text-center border border-slate-200 rounded-lg">
+                        <p className="text-sm font-semibold text-slate-900">
+                          일치하는 전자도서관을 찾지 못했습니다
+                        </p>
+                        <p className="text-xs text-slate-500 mt-1">
+                          도서관 전체 이름(예: OO구 전자도서관, OO시립도서관)으로 검색하거나, 상단 &lsquo;직접 URL로 추가&rsquo; 탭에서 주소를 등록할 수 있습니다.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center justify-between text-xs text-slate-500">
+                          <span>
+                            {searchQuery.trim()
+                              ? `검색 결과 ${displayedCandidates.length}곳`
+                              : `주요 추천 전자도서관 ${displayedCandidates.length}곳`}
+                          </span>
+                          {isSearching && (
+                            <span className="inline-flex items-center gap-1 text-blue-700">
+                              <Loader2Icon className="w-3 h-3 animate-spin" />
+                              웹에서 추가 탐색 중...
+                            </span>
+                          )}
+                        </div>
+
+                        <ul className="divide-y divide-slate-100 border border-slate-200 rounded-lg overflow-hidden">
+                          {displayedCandidates.map((item) => {
+                            const lib = item.library;
+                            const added = isAlreadyAdded(lib);
+                            let hostname = lib.baseUrl;
+                            try {
+                              hostname = new URL(lib.baseUrl).hostname;
+                            } catch {}
+
+                            return (
+                              <li
+                                key={`${lib.id}-${lib.baseUrl}`}
+                                className="px-4 py-3 flex items-center justify-between gap-3 bg-white hover:bg-slate-50/60 transition-colors"
+                              >
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="text-sm font-semibold text-slate-900 truncate">
+                                      {lib.name}
+                                    </span>
+                                    <span
+                                      className={`text-[11px] font-medium ${
+                                        item.supportLevel === 'realtime'
+                                          ? 'text-emerald-700'
+                                          : 'text-slate-500'
+                                      }`}
+                                    >
+                                      {item.supportLabel}
+                                    </span>
+                                  </div>
+                                  <div className="text-xs text-slate-500 mt-0.5 flex items-center gap-1.5 truncate">
+                                    <GlobeIcon className="w-3 h-3 shrink-0 text-slate-400" />
+                                    <span className="truncate">{hostname}</span>
+                                    {lib.description && (
+                                      <>
+                                        <span aria-hidden="true">·</span>
+                                        <span className="truncate">
+                                          {lib.description}
+                                        </span>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {added ? (
+                                  <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 px-2.5 py-1.5 whitespace-nowrap shrink-0">
+                                    <CheckIcon className="w-3.5 h-3.5" />
+                                    추가됨
+                                  </span>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      onAddLibrary({ ...lib, enabled: true })
+                                    }
+                                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-medium hover:bg-blue-700 transition-colors whitespace-nowrap shrink-0"
+                                  >
+                                    <PlusIcon className="w-3.5 h-3.5" />
+                                    추가
+                                  </button>
+                                )}
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <form onSubmit={handleCustomSubmit} className="flex flex-col gap-4">
+                    <div>
+                      <label
+                        htmlFor="lib-name"
+                        className="block text-xs font-semibold text-slate-700 mb-1.5"
+                      >
+                        도서관 이름
+                      </label>
+                      <input
+                        id="lib-name"
+                        type="text"
+                        required
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="예: 성남시 전자도서관, 사내 전자도서관"
+                        className="w-full px-3 py-2 text-[16px] sm:text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label
+                          htmlFor="lib-category"
+                          className="block text-xs font-semibold text-slate-700 mb-1.5"
+                        >
+                          운영 방식
+                        </label>
+                        <select
+                          id="lib-category"
+                          value={category}
+                          onChange={(e) => setCategory(e.target.value)}
+                          className="w-full px-3 py-2 text-[16px] sm:text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        >
+                          <option value="owned">소장형 전자책</option>
+                          <option value="subscription">구독형 전자책</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label
+                          htmlFor="lib-adapter"
+                          className="block text-xs font-semibold text-slate-700 mb-1.5"
+                        >
+                          연동 플랫폼
+                        </label>
+                        <select
+                          id="lib-adapter"
+                          value={adapter}
+                          onChange={(e) => setAdapter(e.target.value)}
+                          className="w-full px-3 py-2 text-[16px] sm:text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        >
+                          <option value="kyobo-elibrary">
+                            교보문고 (/elibrary-front)
+                          </option>
+                          <option value="kyobo-root">교보문고 (독립 도메인)</option>
+                          <option value="kyobo-subscription">
+                            구독형 (로그인 연동)
+                          </option>
+                          <option value="custom-link">외부 검색 링크</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="lib-url"
+                        className="block text-xs font-semibold text-slate-700 mb-1.5"
+                      >
+                        도서관 웹 주소 (URL)
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          id="lib-url"
+                          type="url"
+                          required
+                          value={baseUrl}
+                          onChange={(e) => setBaseUrl(e.target.value)}
+                          placeholder="https://ebook.example.go.kr"
+                          className="flex-1 px-3 py-2 text-[16px] sm:text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        />
+                        {adapter !== 'custom-link' &&
+                          adapter !== 'kyobo-subscription' && (
+                            <button
+                              type="button"
+                              onClick={handleTestConnection}
+                              disabled={testing || !baseUrl.trim()}
+                              className="px-3 py-2 min-h-[44px] sm:min-h-0 text-xs font-medium border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 disabled:opacity-50 whitespace-nowrap shrink-0 flex items-center gap-1.5"
+                            >
+                              {testing && (
+                                <Loader2Icon className="w-3.5 h-3.5 animate-spin" />
+                              )}
+                              연결 테스트
+                            </button>
+                          )}
+                      </div>
+                      {testResult && (
+                        <p
+                          className={`mt-1.5 text-xs flex items-center gap-1.5 ${
+                            testResult.ok ? 'text-emerald-700' : 'text-amber-700'
+                          }`}
+                        >
+                          {testResult.ok && (
+                            <CheckCircle2Icon className="w-3.5 h-3.5 shrink-0" />
+                          )}
+                          <span>{testResult.message}</span>
+                        </p>
+                      )}
+                    </div>
+
+                    {adapter === 'custom-link' && (
+                      <div>
+                        <label
+                          htmlFor="lib-template"
+                          className="block text-xs font-semibold text-slate-700 mb-1.5"
+                        >
+                          검색 URL 템플릿 (선택)
+                        </label>
+                        <input
+                          id="lib-template"
+                          type="text"
+                          value={searchTemplate}
+                          onChange={(e) => setSearchTemplate(e.target.value)}
+                          placeholder="https://lib.example.kr/search?q={query}"
+                          className="w-full px-3 py-2 text-[16px] sm:text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        />
+                        <p className="text-[11px] text-slate-500 mt-1">
+                          {'{query}'} 위치에 선택한 도서 제목이 자동으로 입력됩니다.
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="pt-2 flex items-center justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={onClose}
+                        className="px-4 py-2 min-h-[44px] sm:min-h-0 text-xs font-medium text-slate-600 hover:text-slate-900 rounded-lg"
+                      >
+                        취소
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-4 py-2 min-h-[44px] sm:min-h-0 text-xs font-semibold bg-blue-700 text-white rounded-lg hover:bg-blue-800 transition-colors whitespace-nowrap"
+                      >
+                        도서관 추가하기
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      const QUICK_KEYWORDS = [
+        '한강',
+        '불편한 편의점',
+        '물고기는 존재하지 않는다',
+        '모순',
+        '아몬드',
+        '트렌드 코리아',
+      ];
+
+      function App() {
+        const [libraries, setLibraries] = useState(() => loadSavedLibraries());
+        const [queryInput, setQueryInput] = useState('');
+        const [activeQuery, setActiveQuery] = useState('');
+        const [searchField, setSearchField] = useState('all');
+        const [books, setBooks] = useState([]);
+        const [summaries, setSummaries] = useState([]);
+        const [selectedBookId, setSelectedBookId] = useState(null);
+        const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
+        const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+        const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+        const [resultFilter, setResultFilter] = useState('all');
+        const [sortOrder, setSortOrder] = useState('relevance');
+        const [isLoading, setIsLoading] = useState(false);
+        const [errorMessage, setErrorMessage] = useState(null);
+
+        const searchTokenRef = useRef(0);
+        const librarySectionRef = useRef(null);
+
+        useEffect(() => {
+          saveLibraries(libraries);
+        }, [libraries]);
+
+        const executeSearch = useCallback(
+          async (targetQuery, targetField, targetLibraries) => {
+            const trimmed = targetQuery.trim();
+            if (!trimmed) {
+              setBooks([]);
+              setSummaries([]);
+              setSelectedBookId(null);
+              setActiveQuery('');
+              return;
+            }
+
+            const token = ++searchTokenRef.current;
+            setIsLoading(true);
+            setErrorMessage(null);
+            setActiveQuery(trimmed);
+
+            try {
+              const data = await searchLibrariesStandalone(
+                trimmed,
+                targetField,
+                targetLibraries
+              );
+              if (token !== searchTokenRef.current) return;
+              setBooks(data.books);
+              setSummaries(data.librarySummaries);
+              setSelectedBookId((prev) => {
+                if (prev && data.books.some((b) => b.id === prev)) {
+                  return prev;
+                }
+                return data.books[0]?.id ?? null;
+              });
+            } catch (err) {
+              if (token !== searchTokenRef.current) return;
+              setErrorMessage(
+                err instanceof Error
+                  ? err.message
+                  : '도서관 서버와 통신 중 오류가 발생했습니다.'
+              );
+            } finally {
+              if (token === searchTokenRef.current) {
+                setIsLoading(false);
+              }
+            }
+          },
+          []
+        );
+
+        function handleSearchSubmit(e) {
+          e.preventDefault();
+          executeSearch(queryInput, searchField, libraries);
+        }
+
+        function handleQuickKeyword(keyword) {
+          setQueryInput(keyword);
+          executeSearch(keyword, searchField, libraries);
+        }
+
+        function handleToggleLibrary(id) {
+          const updated = libraries.map((lib) =>
+            lib.id === id ? { ...lib, enabled: !lib.enabled } : lib
+          );
+          setLibraries(updated);
+          if (activeQuery) {
+            executeSearch(activeQuery, searchField, updated);
+          }
+        }
+
+        function handleRemoveLibrary(id) {
+          const updated = libraries.filter((lib) => lib.id !== id);
+          setLibraries(updated);
+          if (activeQuery) {
+            executeSearch(activeQuery, searchField, updated);
+          }
+        }
+
+        function handleAddLibrary(newLib) {
+          if (libraries.some((l) => l.id === newLib.id)) return;
+          const updated = [...libraries, newLib];
+          setLibraries(updated);
+          if (activeQuery) {
+            executeSearch(activeQuery, searchField, updated);
+          }
+        }
+
+        function handleResetDefaults() {
+          setLibraries(DEFAULT_LIBRARIES);
+          if (activeQuery) {
+            executeSearch(activeQuery, searchField, DEFAULT_LIBRARIES);
+          }
+        }
+
+        const filteredAndSortedBooks = useMemo(() => {
+          let list = books;
+          if (resultFilter === 'available') {
+            list = list.filter((b) => b.availableLibraryCount > 0);
+          } else if (resultFilter === 'multi') {
+            list = list.filter((b) => b.heldLibraryCount >= 2);
+          }
+
+          if (sortOrder === 'libraries') {
+            return [...list].sort(
+              (a, b) =>
+                b.heldLibraryCount - a.heldLibraryCount ||
+                b.availableLibraryCount - a.availableLibraryCount
+            );
+          }
+          if (sortOrder === 'newest') {
+            return [...list].sort((a, b) =>
+              (b.publishDate || '').localeCompare(a.publishDate || '')
+            );
+          }
+          return list;
+        }, [books, resultFilter, sortOrder]);
+
+        const selectedBook = useMemo(() => {
+          if (!selectedBookId) return filteredAndSortedBooks[0] ?? null;
+          return (
+            filteredAndSortedBooks.find((b) => b.id === selectedBookId) ??
+            books.find((b) => b.id === selectedBookId) ??
+            filteredAndSortedBooks[0] ??
+            null
+          );
+        }, [books, filteredAndSortedBooks, selectedBookId]);
+
+        const availableBookCount = useMemo(
+          () => books.filter((b) => b.availableLibraryCount > 0).length,
+          [books]
+        );
+
+        const enabledLibrariesCount = libraries.filter((l) => l.enabled).length;
+
+        return (
+          <div className="min-h-[100dvh] flex flex-col bg-slate-50 text-slate-900">
+            <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-slate-200 pt-[env(safe-area-inset-top)]">
+              <div className="max-w-[1440px] mx-auto px-4 sm:px-6 h-[60px] flex items-center justify-between gap-4 sm:gap-8">
+                <a
+                  href="#top"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setResultFilter('all');
+                  }}
+                  className="text-lg font-bold tracking-tight text-slate-900 whitespace-nowrap shrink-0 flex items-center gap-2"
+                >
+                  <BookOpenIcon className="w-5 h-5 text-blue-700" />
+                  <span>책마루</span>
+                </a>
+
+                <nav
+                  className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600"
+                  aria-label="주요 보기"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setResultFilter('all')}
+                    className={`whitespace-nowrap shrink-0 py-1 border-b-2 transition-colors ${
+                      resultFilter === 'all'
+                        ? 'border-blue-700 text-slate-900'
+                        : 'border-transparent hover:text-slate-900'
+                    }`}
+                  >
+                    통합 검색
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setResultFilter('available')}
+                    className={`whitespace-nowrap shrink-0 py-1 border-b-2 transition-colors ${
+                      resultFilter === 'available'
+                        ? 'border-blue-700 text-slate-900'
+                        : 'border-transparent hover:text-slate-900'
+                    }`}
+                  >
+                    대출 가능 도서
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileSidebarOpen(true);
+                      librarySectionRef.current?.scrollIntoView({
+                        behavior: 'smooth',
+                      });
+                    }}
+                    className="whitespace-nowrap shrink-0 py-1 border-b-2 border-transparent hover:text-slate-900 transition-colors"
+                  >
+                    내 도서관 목록
+                  </button>
+                </nav>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setIsAddModalOpen(true)}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-blue-700 text-white text-xs font-semibold hover:bg-blue-800 transition-colors whitespace-nowrap shrink-0"
+                  >
+                    <PlusIcon className="w-3.5 h-3.5" />
+                    <span>도서관 추가</span>
+                  </button>
+                </div>
+              </div>
+            </header>
+
+            <main className="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 py-6 flex flex-col gap-6">
+              <section
+                aria-label="전자책 통합 검색"
+                className="bg-white border border-slate-200 rounded-xl p-4 sm:p-6"
+              >
+                <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 mb-4">
+                  <div>
+                    <h1
+                      className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight"
+                      style={{ textWrap: 'balance' }}
+                    >
+                      가입한 전자도서관 한 번에 검색하기
+                    </h1>
+                    <p className="text-sm text-slate-600 mt-1">
+                      책 제목, 저자, 키워드를 입력하면 내 도서관별 소장 여부와 실시간 대출 가능 권수를 바로 확인합니다.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 lg:hidden">
+                    <button
+                      type="button"
+                      onClick={() => setMobileSidebarOpen((v) => !v)}
+                      className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[40px] rounded-lg border border-slate-200 text-xs font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 whitespace-nowrap"
+                    >
+                      <LibraryIcon className="w-3.5 h-3.5" />
+                      <span>검색 도서관 {enabledLibrariesCount}곳 설정</span>
+                    </button>
+                  </div>
+                </div>
+
+                <form
+                  onSubmit={handleSearchSubmit}
+                  className="flex flex-col sm:flex-row gap-2.5"
+                >
+                  <div className="flex flex-1 border border-slate-300 rounded-lg bg-white focus-within:ring-2 focus-within:ring-blue-600 focus-within:border-blue-600 overflow-hidden">
+                    <label htmlFor="search-field" className="sr-only">
+                      검색 기준
+                    </label>
+                    <select
+                      id="search-field"
+                      value={searchField}
+                      onChange={(e) => setSearchField(e.target.value)}
+                      className="px-3 py-2.5 text-[16px] sm:text-sm font-medium text-slate-700 bg-slate-50 border-r border-slate-200 focus:outline-none shrink-0"
+                    >
+                      <option value="all">통합검색</option>
+                      <option value="title">도서명</option>
+                      <option value="author">저자</option>
+                    </select>
+
+                    <div className="relative flex-1 flex items-center min-w-0">
+                      <SearchIcon className="w-4 h-4 text-slate-400 ml-3 shrink-0" />
+                      <label htmlFor="book-search-input" className="sr-only">
+                        도서 검색어 입력
+                      </label>
+                      <input
+                        id="book-search-input"
+                        type="search"
+                        enterKeyHint="search"
+                        value={queryInput}
+                        onChange={(e) => setQueryInput(e.target.value)}
+                        placeholder="책 제목, 저자, 키워드를 입력하세요 (예: 한강, 물고기는 존재하지 않는다)"
+                        className="w-full min-w-0 px-3 py-2.5 text-[16px] sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
+                      />
+                      {queryInput && (
+                        <button
+                          type="button"
+                          onClick={() => setQueryInput('')}
+                          aria-label="검색어 지우기"
+                          className="p-2 mr-1 text-slate-400 hover:text-slate-700 rounded"
+                        >
+                          <XIcon className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={
+                      isLoading || !queryInput.trim() || enabledLibrariesCount === 0
+                    }
+                    className="px-6 py-2.5 min-h-[44px] rounded-lg bg-slate-900 text-white text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors whitespace-nowrap shrink-0"
+                  >
+                    {isLoading ? '검색 중...' : '통합 검색'}
+                  </button>
+                </form>
+
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                  <span className="text-slate-500 font-medium">빠른 검색:</span>
+                  {QUICK_KEYWORDS.map((kw) => (
+                    <button
+                      key={kw}
+                      type="button"
+                      onClick={() => handleQuickKeyword(kw)}
+                      className={`px-2.5 py-1 rounded-md transition-colors whitespace-nowrap ${
+                        activeQuery === kw
+                          ? 'bg-blue-50 text-blue-700 font-semibold'
+                          : 'bg-slate-100 text-slate-700 hover:bg-slate-200/70'
+                      }`}
+                    >
+                      {kw}
+                    </button>
+                  ))}
+                </div>
+              </section>
+
+              <div className="flex flex-col lg:flex-row items-start gap-6">
+                <div
+                  ref={librarySectionRef}
+                  className={`${
+                    mobileSidebarOpen ? 'block' : 'hidden'
+                  } lg:block w-full lg:w-auto`}
+                >
+                  <LibrarySidebar
+                    libraries={libraries}
+                    summaries={summaries}
+                    isSearching={isLoading}
+                    onToggleLibrary={handleToggleLibrary}
+                    onRemoveLibrary={handleRemoveLibrary}
+                    onOpenAddModal={() => setIsAddModalOpen(true)}
+                    onResetDefaults={handleResetDefaults}
+                  />
+                </div>
+
+                <div className="flex-1 min-w-0 w-full flex flex-col gap-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3">
+                    <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg max-w-full overflow-x-auto">
+                      <button
+                        type="button"
+                        onClick={() => setResultFilter('all')}
+                        className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap tabular-nums ${
+                          resultFilter === 'all'
+                            ? 'bg-white text-slate-900 shadow-sm'
+                            : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                      >
+                        전체 ({books.length})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setResultFilter('available')}
+                        className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap tabular-nums ${
+                          resultFilter === 'available'
+                            ? 'bg-white text-slate-900 shadow-sm'
+                            : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                      >
+                        지금 대출 가능 ({availableBookCount})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setResultFilter('multi')}
+                        className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
+                          resultFilter === 'multi'
+                            ? 'bg-white text-slate-900 shadow-sm'
+                            : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                      >
+                        2곳 이상 소장
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-xs text-slate-600">
+                      <SlidersHorizontalIcon className="w-3.5 h-3.5 text-slate-400" />
+                      <label htmlFor="sort-order" className="sr-only">
+                        정렬 기준
+                      </label>
+                      <select
+                        id="sort-order"
+                        value={sortOrder}
+                        onChange={(e) => setSortOrder(e.target.value)}
+                        className="bg-transparent font-medium text-slate-700 focus:outline-none cursor-pointer"
+                      >
+                        <option value="relevance">관련도 · 대출가능순</option>
+                        <option value="libraries">보유 도서관 많은순</option>
+                        <option value="newest">최신 출간순</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {errorMessage && (
+                    <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 flex items-center justify-between gap-3 text-sm text-rose-800">
+                      <div className="flex items-center gap-2.5">
+                        <AlertTriangleIcon className="w-4 h-4 shrink-0" />
+                        <span>{errorMessage}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          executeSearch(activeQuery, searchField, libraries)
+                        }
+                        className="px-3 py-1.5 text-xs font-semibold bg-white border border-rose-200 rounded-lg hover:bg-rose-100 whitespace-nowrap"
+                      >
+                        다시 시도
+                      </button>
+                    </div>
+                  )}
+
+                  {enabledLibrariesCount === 0 ? (
+                    <div className="bg-white border border-slate-200 rounded-xl p-10 text-center">
+                      <p className="text-sm font-semibold text-slate-900">
+                        선택된 검색 도서관이 없습니다
+                      </p>
+                      <p className="text-xs text-slate-500 mt-1">
+                        왼쪽 목록에서 도서관을 선택하거나 새로운 도서관을 추가해 주세요.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
+                      <div className="xl:col-span-7 flex flex-col gap-2.5">
+                        {isLoading ? (
+                          Array.from({ length: 6 }).map((_, idx) => (
+                            <div
+                              key={idx}
+                              className="bg-white border border-slate-200 rounded-xl p-4 flex gap-4 animate-pulse"
+                            >
+                              <div className="w-16 h-[92px] bg-slate-200 rounded-md shrink-0" />
+                              <div className="flex-1 flex flex-col gap-2 py-1">
+                                <div className="h-4 bg-slate-200 rounded w-3/5" />
+                                <div className="h-3 bg-slate-100 rounded w-2/5" />
+                                <div className="h-3 bg-slate-100 rounded w-4/5 mt-1" />
+                              </div>
+                            </div>
+                          ))
+                        ) : filteredAndSortedBooks.length === 0 ? (
+                          <div className="bg-white border border-slate-200 rounded-xl p-10 text-center">
+                            <p className="text-sm font-semibold text-slate-900">
+                              {activeQuery
+                                ? `"${activeQuery}"에 대한 검색 결과가 없습니다`
+                                : '검색어를 입력해 도서를 찾아보세요'}
+                            </p>
+                            <p className="text-xs text-slate-500 mt-1.5">
+                              {resultFilter !== 'all'
+                                ? '필터를 "전체"로 변경하거나 다른 검색어를 입력해 보세요.'
+                                : '도서명이나 저자명 일부만 입력해 보시거나 검색 대상 도서관을 추가해 보세요.'}
+                            </p>
+                            {resultFilter !== 'all' && books.length > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => setResultFilter('all')}
+                                className="mt-4 px-4 py-2 text-xs font-semibold bg-slate-900 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                              >
+                                전체 결과 보기
+                              </button>
+                            )}
+                          </div>
+                        ) : (
+                          filteredAndSortedBooks.map((book) => {
+                            const isSelected = selectedBook?.id === book.id;
+                            const heldNames = book.availabilities
+                              .filter(
+                                (a) =>
+                                  a.status === 'available' ||
+                                  a.status === 'subscription_available' ||
+                                  a.status === 'loaned'
+                              )
+                              .map((a) => {
+                                const lib = libraries.find(
+                                  (l) => l.id === a.libraryId
+                                );
+                                return lib?.shortName || a.libraryName;
+                              });
+
+                            return (
+                              <button
+                                key={book.id}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedBookId(book.id);
+                                  setMobileDetailOpen(true);
+                                }}
+                                className={`w-full text-left rounded-xl border p-4 flex items-start gap-4 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 ${
+                                  isSelected
+                                    ? 'bg-blue-50/45 border-blue-600'
+                                    : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/50'
+                                }`}
+                              >
+                                <BookCover
+                                  src={book.coverUrl}
+                                  title={book.title}
+                                  size="md"
+                                />
+
+                                <div className="min-w-0 flex-1">
+                                  <h3 className="text-[15px] font-bold text-slate-900 leading-snug line-clamp-2 break-keep">
+                                    {book.title}
+                                  </h3>
+
+                                  <div className="mt-1 text-xs text-slate-600 flex flex-wrap items-center gap-1.5">
+                                    <span className="font-medium text-slate-800">
+                                      {book.author}
+                                    </span>
+                                    <span aria-hidden="true">·</span>
+                                    <span>{book.publisher}</span>
+                                    {book.publishDate && (
+                                      <>
+                                        <span aria-hidden="true">·</span>
+                                        <span className="tabular-nums text-slate-500">
+                                          {book.publishDate}
+                                        </span>
+                                      </>
+                                    )}
+                                  </div>
+
+                                  {book.description && (
+                                    <p className="mt-2 text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                                      {book.description}
+                                    </p>
+                                  )}
+
+                                  <div className="mt-3 pt-2.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs">
+                                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                                      {book.availableLibraryCount > 0 ? (
+                                        <span className="inline-flex items-center gap-1 font-semibold text-emerald-700 tabular-nums shrink-0">
+                                          <CheckCircle2Icon className="w-3.5 h-3.5 shrink-0" />
+                                          <span>
+                                            대출 가능 {book.availableLibraryCount}곳
+                                          </span>
+                                        </span>
+                                      ) : book.heldLibraryCount > 0 ? (
+                                        <span className="inline-flex items-center gap-1 font-semibold text-amber-700 shrink-0">
+                                          <ClockIcon className="w-3.5 h-3.5 shrink-0" />
+                                          <span>소장처 모두 대출중</span>
+                                        </span>
+                                      ) : (
+                                        <span className="inline-flex items-center gap-1 font-semibold text-blue-700 shrink-0">
+                                          <ExternalLinkIcon className="w-3.5 h-3.5 shrink-0" />
+                                          <span>도서관별 직접 검색</span>
+                                        </span>
+                                      )}
+                                      {heldNames.length > 0 && (
+                                        <>
+                                          <span
+                                            aria-hidden="true"
+                                            className="text-slate-300 shrink-0"
+                                          >
+                                            ·
+                                          </span>
+                                          <span className="text-slate-600 truncate min-w-0 flex-1">
+                                            {heldNames.join(', ')}
+                                          </span>
+                                        </>
+                                      )}
+                                    </div>
+
+                                    <span className="text-[11px] font-medium text-blue-700 whitespace-nowrap shrink-0">
+                                      대출여부 확인 →
+                                    </span>
+                                  </div>
+                                </div>
+                              </button>
+                            );
+                          })
+                        )}
+                      </div>
+
+                      <div className="hidden xl:block xl:col-span-5 sticky top-20">
+                        <BookDetailPanel book={selectedBook} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </main>
+
+            {mobileDetailOpen && selectedBook && (
+              <div
+                className="xl:hidden fixed inset-0 z-40 bg-slate-900/45 flex items-end sm:items-center justify-center p-0 sm:p-4"
+                role="dialog"
+                aria-modal="true"
+              >
+                <div className="w-full max-w-2xl max-h-[88dvh] overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] pb-[env(safe-area-inset-bottom)] rounded-t-2xl sm:rounded-xl bg-white shadow-2xl">
+                  <BookDetailPanel
+                    book={selectedBook}
+                    onCloseMobile={() => setMobileDetailOpen(false)}
+                  />
+                </div>
+              </div>
+            )}
+
+            <AddLibraryModal
+              isOpen={isAddModalOpen}
+              libraries={libraries}
+              onClose={() => setIsAddModalOpen(false)}
+              onAddLibrary={handleAddLibrary}
+            />
+          </div>
+        );
+      }
+
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(<App />);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "name": "Remix 책마루 — 내 전자도서관 통합 검색",
+  "description": "가입한 여러 전자도서관을 한 번에 검색하고, 도서별 소장 및 실시간 대출 가능 여부를 비교하는 전자책 통합 검색 앱입니다.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
